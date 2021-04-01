@@ -19,20 +19,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r clear.workspace, eval=FALSE, echo=FALSE}
 #-----clear workspace-----
-# Clear the environment without clearing knitr
-#
-# This chunk is useful for code development because it simulates the knitr
-# environment. Run it as a code chunk when testing. When knitr is run, it uses a
-# fresh, clean environment, so we set eval=FALSE to disable this chunk when
-# rendering.
 
 # Clear workspace of all objects and unload all extra (non-base) packages
 rm(list = ls(all = TRUE))
 if (!is.null(sessionInfo()$otherPkgs)) {
     suppressWarnings(
-        lapply(paste('package:', names(sessionInfo()$otherPkgs), sep=""),
+        res <- lapply(paste('package:', names(sessionInfo()$otherPkgs), sep=""),
                detach, character.only=TRUE, unload=TRUE, force=TRUE)
         )
+  rm(res)
 }
 
 ```
@@ -127,13 +122,13 @@ rm(url, file_name, file_path, data_path)
 
 The purpose of this lab is to learn about geostatistical models and further
 solidify your understanding of regression for prediction.  We will use the same
-MESA Air snapshot data described in [Mercer et al
-2011](https://doi.org/10.1016/j.atmosenv.2011.05.043) that we used earlier in
-the quarter.  As a side benefit you will also get exposure to the most modern
-tools for handling spatial data in R and learn how to create maps and add your
-data to them.  The secondary intent of this lab is to help you learn to use
-geographic data in R as productively as possible while recognizing there is much
-more to learn and develop.
+MESA Air snapshot data described in 
+[Mercer et al 2011](https://doi.org/10.1016/j.atmosenv.2011.05.043) that we used 
+earlier in the quarter.  As a side benefit you will also get exposure to the
+most modern tools for handling spatial data in R and learn how to create maps
+and add your data to them.  The secondary intent of this lab is to help you
+learn to use geographic data in R as productively as possible while recognizing
+there is much more to learn and develop.
 
 **Credit**:  Brian High, Chris Zuidema, and Dave Slager have provided an
 enormous amount of support in developing this lab.
@@ -159,15 +154,16 @@ that would benefit from further development.
 The use of spatial data in R is rapidly evolving.  Here are several useful
 overview resources:
 
-* A good and recently updated book is  [Geocomputation in
-R](https://geocompr.robinlovelace.net/index.html) by Robin Lovelace.  Its
+* A good and recently updated book is 
+[Geocomputation in R](https://geocompr.robinlovelace.net/index.html) by Robin 
+Lovelace.  Its
 [introductory chapter](https://geocompr.robinlovelace.net/intro.html) gives a
 great overview of the "what" and "why" of geocomputation.  It also has a good
-overview of [R's spatial
-ecosystem](https://geocompr.robinlovelace.net/intro.html#rs-spatial-ecosystem),
+overview of 
+[R's spatial ecosystem](https://geocompr.robinlovelace.net/intro.html#rs-spatial-ecosystem),
 and a very nice overview of the history of spatial data in R, which Lovelace
-calls [The history of
-R-spatial](https://geocompr.robinlovelace.net/intro.html#the-history-of-r-spatial).
+calls 
+[The history of R-spatial](https://geocompr.robinlovelace.net/intro.html#the-history-of-r-spatial).
 In particular, it puts into historical context the tools we are using in this
 lab with the current state of the art.
 
@@ -180,14 +176,14 @@ recommend Chapter 1 for an overview of ideas, Chapter 4 for the quickest start
 to using spatial data (though the rest of Part I will also be helpful), and
 Chapter 8 for methods for kriging.
 
-* Pebesma & Bivand have a new book [Spatial Data
-Science](https://keen-swartz-3146c4.netlify.app/) that explains the concepts
-underlying spatial data, links it to many modern packages of theirs (e.g.
-`sf`, `lwgeom`, and `stars`), and accompanies this with `tidyverse`.
+* Pebesma & Bivand have a new book 
+[Spatial Data Science](https://keen-swartz-3146c4.netlify.app/) that explains 
+the concepts underlying spatial data, links it to many modern packages of theirs
+(e.g. `sf`, `lwgeom`, and `stars`), and accompanies this with `tidyverse`.
 
-* **Coordinate Reference Systems and Projections**:  These can be confusing to the uninitiated.  Here are a few resources:
-    - [A brief and compact overview of coordinate reference
-systems](https://www.nceas.ucsb.edu/sites/default/files/2020-04/OverviewCoordinateReferenceSystems.pdf).
+* **Coordinate Reference Systems and Projections**:  These can be confusing to
+  the uninitiated.  Here are a few resources:
+    - [A brief and compact overview of coordinate reference systems](https://www.nceas.ucsb.edu/sites/default/files/2020-04/OverviewCoordinateReferenceSystems.pdf).
     - Nick Eubank's overview of [Projections and Coordinate Reference Systems](http://www.nickeubank.com/wp-content/uploads/2018/02/CoordinateSystems_And_Projections.pdf).
 
 
@@ -199,23 +195,18 @@ spatial data in R.  We use `sf` in this lab.  The alternative is `sp` and we
 include a few references to it for completeness.  See also the introduction to
 the snapshot data section below for a discussion on distance calculations.
 
-* Jesse Sadler gives a good overview in his [Introduction to GIS with R:
-Spatial data with the sp and sf
-packages](https://www.jessesadler.com/post/gis-with-r-intro/)
+* Jesse Sadler gives a good overview in his 
+[Introduction to GIS with R: Spatial data with the sp and sf packages](https://www.jessesadler.com/post/gis-with-r-intro/)
 
-* R-bloggers post: [Should I learn sf or sp for spatial R
-programming?](https://www.r-bloggers.com/2018/03/should-i-learn-sf-or-sp-for-spatial-r-programming/)
+* R-bloggers post: [Should I learn sf or sp for spatial R programming?](https://www.r-bloggers.com/2018/03/should-i-learn-sf-or-sp-for-spatial-r-programming/)
 
-* Moving from `sp` to `sf`: See this [Nick Bearman
-blog](https://www.nickbearman.me.uk/2019/04/spatial-r-moving-from-sp-to-sf/) for
-some good perspective.
+* Moving from `sp` to `sf`: See this [Nick Bearman blog](https://www.nickbearman.me.uk/2019/04/spatial-r-moving-from-sp-to-sf/) 
+for some good perspective.
 
-* `sp`: This RPub describes [Spatial Data
-Objects](https://rpubs.com/NateByers/spatialobjects) including `Spatial`,
-`SpatialPoints`, and `SpatialPointsDataFrame`.
+* `sp`: This RPub describes [Spatial Data Objects](https://rpubs.com/NateByers/spatialobjects) 
+including `Spatial`, `SpatialPoints`, and `SpatialPointsDataFrame`.
 
-* `sf`: See the very accessible Ed Pebesma overview of [Simple Features for
-R](https://r-spatial.github.io/sf/articles/sf1.html#what-is-a-feature-) and to
+* `sf`: See the very accessible Ed Pebesma overview of [Simple Features for R](https://r-spatial.github.io/sf/articles/sf1.html#what-is-a-feature-) and to
 dig further, [here](https://r-spatial.github.io/sf/articles/) is the index to
 all his `sf` vignettes.
 
@@ -231,8 +222,7 @@ type `demo(gstat::comp_geoR)` in the console after loading both `gstat` and
 discuss `gstat` in this lab. There are good examples online and in books (e.g.,
 Bivand's) that show how to do kriging with `gstat`.
 
-(Aside:  There is an interesting [stackoverflow
-discussion](https://stackoverflow.com/questions/21970992/compare-variogram-and-variog-function)
+(Aside:  There is an interesting [stackoverflow discussion](https://stackoverflow.com/questions/21970992/compare-variogram-and-variog-function)
 of comparing empirical variograms in `geoR` vs. `sp` and `gstat` that addresses
 coordinate transformations and binning.  It is worth a look if you want to
 understand the details better.)
@@ -275,9 +265,8 @@ semivariograms; see the following link for discussion of terminology and the
 confusing overlapping terms in the literature).
 
 There is confusion about terminology and often variogram and semivariogram are
-used interchangeably.  This paper, [Variogram or semivariogram? Understanding
-the variances in a
-variogram](https://link.springer.com/article/10.1007%2Fs11119-008-9056-2), gives
+used interchangeably.  This paper, 
+[Variogram or semivariogram? Understanding the variances in a variogram](https://link.springer.com/article/10.1007%2Fs11119-008-9056-2), gives
 a nice overview of the terminology and notation.  It also links well-understood
 estimates of variance with semivariance estimates, making the point that a
 variance can be expressed either in the traditional way as the squared deviation
@@ -306,8 +295,7 @@ Meuse river.
 
 The following section was structured after the examples
 [here](https://rpubs.com/liem/63374) as well as a more updated version that uses
-`tidyverse` and `ggplot` commands called [Meuse
-Tutorial](https://rstudio-pubs-static.s3.amazonaws.com/134781_28af3676f8b943749ebfa536b3897cac.html).
+`tidyverse` and `ggplot` commands called [Meuse Tutorial](https://rstudio-pubs-static.s3.amazonaws.com/134781_28af3676f8b943749ebfa536b3897cac.html).
 However, this implementation uses `sf`.
 
 ```{r basics with meuse dataset - summary + EDA}
@@ -437,13 +425,13 @@ str(meuse.riv)
 # The following code specifies the columns containing the coordinates,
 # specifies the projection of the coordinates as the same meuse projection,
 # and explicitly combines the points into a polygon
-meuse.riv <- st_as_sf(data.frame(meuse.riv), coords=1:2, crs=st_crs(meuse)) %>%
+meuse.riv <- st_as_sf(data.frame(meuse.riv), coords = 1:2, crs = st_crs(meuse)) %>%
   st_combine() %>%
   st_cast('POLYGON')
 
 # ggplot2 readily accepts sf objects for plotting via geom_sf()
 # Let's make a map
-ggplot(data=meuse) + geom_sf() + geom_sf(data=meuse.riv)
+ggplot() + geom_sf(data = meuse) + geom_sf(data = meuse.riv)
 
 # The river is too long compared to the study area
 # For prettier plotting, crop the river polygon to within 500m buffer of data
@@ -454,42 +442,39 @@ ggplot(data=meuse) + geom_sf() + geom_sf(data=meuse.riv)
 meuse.riv <- st_crop(meuse.riv, st_bbox(st_buffer(meuse, 500)))
 
 # Much better!
-ggplot(data=meuse) + geom_sf() + geom_sf(data=meuse.riv)
+ggplot() + geom_sf(data = meuse) + geom_sf(data = meuse.riv)
 
 # Color the zinc data based on the native scale
 # Plotting the river before the points ensures points are on top of the river
 # Scale_color_gradients with rainbow(rev=TRUE) creates a heatmap
-
-ggplot(data=meuse) +
-  geom_sf(data=meuse.riv) +
-  geom_sf(data=meuse, aes(color=zinc)) +
-  scale_color_gradientn(colors=rainbow(4, rev=TRUE)) +
+ggplot() +
+  geom_sf(data = meuse.riv) +
+  geom_sf(data = meuse, aes(color = zinc)) +
+  scale_color_gradientn(colors = rainbow(4, rev = TRUE)) +
   ggtitle("Zinc Concentration (ppm)") +
   theme_bw()
 
 # Color the zinc data based on the log scale
-
-ggplot(data=meuse) +
-  geom_sf(data=meuse.riv) +
-  geom_sf(data=meuse, aes(color=log(zinc))) +
-  scale_color_gradientn(colors=rainbow(4, rev=TRUE)) +
+ggplot() +
+  geom_sf(data = meuse.riv) +
+  geom_sf(data = meuse, aes(color = log(zinc))) +
+  scale_color_gradientn(colors = rainbow(4, rev = TRUE)) +
   ggtitle("Zinc Concentration in log(ppm)") +
   theme_bw()
 
 # Make a bubble plot
 # The alpha value adds transparency to plotting shapes
-
-ggplot(data=meuse) +
-  geom_sf(data=meuse.riv) +
-  geom_sf(data=meuse, aes(size=zinc), color='blue', alpha=1/2) +
+ggplot() +
+  geom_sf(data = meuse.riv) +
+  geom_sf(data = meuse, aes(size = zinc), color='blue', alpha=1/2) +
   ggtitle("Zinc Concentration (ppm)") +
   theme_bw()
 
 # Put these ideas together:  Size and color based on native scale
-ggplot(data=meuse) +
-  geom_sf(data=meuse.riv) +
-  geom_sf(data=meuse, aes(size=zinc, color=zinc)) +
-  scale_color_gradientn(colors=rainbow(4, rev=TRUE)) +
+ggplot() +
+  geom_sf(data = meuse.riv) +
+  geom_sf(data = meuse, aes(size = zinc, color = zinc)) +
+  scale_color_gradientn(colors = rainbow(4, rev = TRUE)) +
   ggtitle("Zinc Concentration (ppm)") +
   theme_bw()
 
@@ -524,6 +509,7 @@ also uploaded to the course Canvas site.
 
 ```{r meuse empirical variogram, warning=FALSE}
 # ---- meuse empirical variogram ----
+
 # Note: We set warning=FALSE to omit warnings about the projection.  This is
 # because newer standards for projection strings are becoming the norm and the
 # current version of the packages we are using (Feb 2021) have not yet been
@@ -603,13 +589,13 @@ results of a fitted variogram model in the `model = ` option.  Note that in this
 example we are estimating a common mean using ordinary kriging.
 
 ```{r meuse ordinary kriging}
-# ---- meuse ordinary kriging ----
+#-----meuse ordinary kriging ----
 
 # read in the meuse grid to use for predictions
 data(meuse.grid)
 
 # convert to sf points
-meuse.grid <- st_as_sf(meuse.grid,coords=c('x','y'),crs=st_crs(meuse))
+meuse.grid <- st_as_sf(meuse.grid,coords=c('x','y'),crs = st_crs(meuse))
 
 # ordinary kriging of log(zinc)
 # first two arguments are formula and data
@@ -796,12 +782,12 @@ meters. It is the USA_Continguous_Lambert_Conformal_Conic.
 
 The `sf` package makes properly estimating distances easy as long as we input
 the correct coordinate reference system into the object.  For distances,
-[Lambert
-coordinates](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection)
+[Lambert coordinates](https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection)
 are useful because they are in meters and projected for a flat surface so
 distance calculations can be done directly.  To see documentation of the Lambert
-projection formulas, see this [New Zealand government
-website](https://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/projection-conversions/lambert-conformal-conic-geographic).  However, with the `sf` package, we can easily convert to Lambert coordinates within the package, as long as we get the initial projection correct.
+projection formulas, see this [New Zealand government website](https://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/projection-conversions/lambert-conformal-conic-geographic).
+However, with the `sf` package, we can easily convert to Lambert coordinates
+within the package, as long as we get the initial projection correct.
 
 Here are some examples of useful packages and functions for working with spatial data
 and to get distances.  
@@ -818,8 +804,7 @@ same, or within a specified distance.
 between two locations. This function can be used to create a distance matrix.
 
 * The `geosphere` package has multiple distance formulas for two points with
-latitude and longitude coordinates.  See this [stackoverflow
-comment](https://stackoverflow.com/questions/31668163/geographic-geospatial-distance-between-2-lists-of-lat-lon-points-coordinates).
+latitude and longitude coordinates.  See this [stackoverflow comment](https://stackoverflow.com/questions/31668163/geographic-geospatial-distance-between-2-lists-of-lat-lon-points-coordinates).
 
 
 ### Snapshot data set-up
@@ -844,8 +829,8 @@ lambert_proj <- "+proj=lcc +lat_1=33 +lat_2=45 +lat_0=39 +lon_0=-96 +x_0=0 +y_0=
 # later
 fall <- snapshot %>%
     filter(seasonfac == "2Fall") %>%
-    select(ID, latitude, longitude, ln_nox, D2A1, A1_50, A23_400, Pop_5000, D2C, Int_3000, D2Comm, cluster, group_loc, FieldID) %>%
-  as.data.frame
+    dplyr::select(ID, latitude, longitude, ln_nox, D2A1, A1_50, A23_400, Pop_5000, D2C, Int_3000, D2Comm, cluster, group_loc, FieldID) %>%
+  as.data.frame()
 
 # now convert this to a sf object, indicating the coordinate reference system (CRS)
 fall <- st_as_sf(fall, coords=c('longitude','latitude'), crs=latlong_proj)
@@ -872,7 +857,7 @@ class(la_grid)
 # also drop rows with -Inf values in D2A1 variable
 la_grid <- la_grid %>%
   filter(D2A1 != -Inf) %>%
-  select(-lambert_x,-lambert_y) %>%
+  dplyr::select(-lambert_x,-lambert_y) %>%
   st_as_sf(coords=c('longitude','latitude'), crs=latlong_proj)
 
 # check class again
@@ -1197,7 +1182,7 @@ identical(st_coordinates(kc_la), st_coordinates(la_grid))
 st_join(la_grid, kc_la)
 
 # To circumvent this issue, let's join by the nearest feature (point)
-new_grid <- st_join(la_grid, kc_la, join=st_nearest_feature)
+new_grid <- st_join(la_grid, kc_la, join = st_nearest_feature)
 
 # Here is another way to join, by specifying a very small tolerance, which takes longer
 #new_grid <- st_join(la_grid, kc_la, join=st_equals_exact, par=1e-10)
